@@ -1,0 +1,67 @@
+---
+- hosts: armbian
+  gather_facts: false
+  vars:
+
+  tasks:
+  - name: Copy splash image
+    copy:
+      src: {{ override_config_dir | default('config') }}/splash.png
+      dest: /opt/splash.png
+    ignore_errors: true
+    register: splash_image_present
+
+
+  - name: Prepare splashscreen initd file
+    copy:
+      dest: /etc/init.d/asplashscreen
+      content: |
+        #! /bin/sh
+        ### BEGIN INIT INFO
+        # Provides:          asplashscreen
+        # Required-Start:
+        # Required-Stop:
+        # Should-Start:
+        # Default-Start:     S
+        # Default-Stop:
+        # Short-Description: Show custom splashscreen
+        # Description:       Show custom splashscreen
+        ### END INIT INFO
+
+
+        do_start () {
+
+            /usr/bin/fbi -T 1 -noverbose -a /opt/splash.png
+            exit 0
+        }
+
+        case "$1" in
+          start|"")
+            do_start
+            ;;
+          restart|reload|force-reload)
+            echo "Error: argument '$1' not supported" >&2
+            exit 3
+            ;;
+          stop)
+            # No-op
+            ;;
+          status)
+            exit 0
+            ;;
+          *)
+            echo "Usage: asplashscreen [start|stop]" >&2
+            exit 3
+            ;;
+        esac
+      mode: 0755
+    register: splashscreen_install
+    when: splash_image_present is succeeded
+
+  # TODO this is broken in 18.04 Bionic, insserv is missing, nee to rewrite to systemd
+  - name: adding initd script to single user mode
+    sysvinit:
+      name: asplashscreen
+      enabled: yes
+    #shell: /usr/lib/insserv/insserv /etc/init.d/asplashscreen
+    when: splashscreen_install.changed

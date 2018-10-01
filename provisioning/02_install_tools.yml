@@ -1,0 +1,31 @@
+---
+- hosts: armbian
+  gather_facts: false
+  vars:
+  tasks:
+  - name: Install tools
+    apt: name={{ item }} state=latest
+    with_items:
+      - wget
+      - git
+      - tree
+      - htop
+      - tmux
+      - iotop
+      - iftop
+      - mc
+      - curl
+      - net-tools
+      - iptraf
+      - nmap
+      - ethtool
+      - telnet
+      - screen
+      - mosh
+#      - python3
+#      - python3-virtualenv
+#      - sysv-rc-conf # not available in Bionic
+      - multitail
+      - netcat
+      - tcpdump
+      - dbus-x11

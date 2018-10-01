@@ -1,0 +1,29 @@
+---
+- hosts: armbian
+  gather_facts: false
+  vars:
+
+  tasks:
+  - name: Check config dir exists
+    file:
+      dest: /opt/config
+      state: directory
+
+  - name: Update Tab rotate config
+    copy:
+      src: {{ override_config_dir | default('config') }}/tab_rotate.json
+      dest: /opt/config
+      mode: 0666
+
+  - name: Update simple_url.txt file
+    copy:
+      content: |
+        {{ simple_url }}
+
+        # First line of this file must contain valid URL to load on startup
+        # examples:
+        about:blank
+        https://time.is
+        https://flightradar24.com
+      dest: /opt/config/simple_url.txt
+      mode: 0666

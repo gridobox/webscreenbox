@@ -1,0 +1,118 @@
+---
+- hosts: armbian
+  gather_facts: false
+  vars:
+
+  tasks:
+
+  # TODO matchbox background picture
+
+  # TODO separate playbook for VNC
+  - name: Check x11vnc conf dir exists
+    file:
+      dest: /etc/x11vnc
+      state: directory
+
+  - name: VNC password
+    shell: x11vnc -storepasswd "{{ x11vnc_passwd }}" /etc/x11vnc/vncpwd
+
+  - name: Prepare start_kiosk.sh file
+    copy:
+      dest: /opt/start_kiosk.sh
+      content: |
+        #!/bin/bash
+
+        # user to run browser
+        USER={{ operator_user | default(user)}}
+
+        # redirect all output to a logfile
+        exec >> /var/log/kiosk_all.log
+        exec 2>&1
+
+        # disable screen saver
+        xset -dpms
+        xset s off
+        xset s noblank
+
+        # move mouse away, not to trigger hover effects
+        xdotool mousemove 0 0
+
+        # hide cursor
+        unclutter &
+
+        # start window manager
+        matchbox-window-manager &
+        # matchbox-window-manager -use_cursor no -use_titlebar no &
+        # matchbox-window-manager &> /var/log/kiosk_matchbox.log &
+
+        #python -m SimpleHTTPServer 80 &> /var/log/kiosk_http.log &
+
+        # TODO separate self-healing script
+        x11vnc -rfbauth /etc/x11vnc/vncpwd -forever &
+
+        URL=$(head -n 1 /opt/config/simple_url.txt)
+        # URL="about:blank"
+
+        # wait for network
+        #sleep 5
+
+        # chromium
+        {% if not browser == 'chromium-browser' %}# {% endif %}su -c "sed -i -E 's/\"exited_cleanly\": ?false/\"exited_cleanly\":true/' ~/.config/chromium/Default/Preferences" ${USER}
+        {% if not browser == 'chromium-browser' %}# {% endif %}su -c "sed -i -E 's/\"exit_type\": ?\"Crashed\"/\"exit_type\":\"Normal\"/' ~/.config/chromium/Default/Preferences" ${USER}
+        {% if not browser == 'chromium-browser' %}# {% endif %}su -c "chromium-browser --start-fullscreen --no-first-run --touch-events=enabled --fast --fast-start --disable-popup-blocking --disable-infobars --disable-session-crashed-bubble --disable-tab-switcher --disable-translate --enable-low-res-tiling '${URL}'" ${USER}
+
+        # firefox
+        {% if not browser == 'firefox' %}# {% endif %}su -c "firefox '${URL}'"
+
+
+        # experiments
+        # chromium-browser --kiosk http://time.is/ --no-first-run --touch-events=enabled --fast --fast-start --disable-popup-blocking --disable-infobars --disable-session-crashed-bubble --disable-tab-switcher --disable-translate --enable-low-res-tiling
+        # logging
+        # midori -e Fullscreen -i 100 -a "${URL}" &> /var/log/kiosk_midori.log
+        # reset every 100s
+        # midori -e Fullscreen -i 100 -a '${URL}'
+      mode: 0755
+
+  - name: Prepare rc.local file
+    copy:
+      dest: /etc/rc.local
+      content: |
+        #!/bin/bash
+
+        # append both stdout and stderr to file
+        exec >> /var/log/kiosk_all.log
+        exec 2>&1
+
+        echo "Initializing Kiosk in rc.local"
+
+        # do not occupy this session rc.local must not be infinite, thus going to subprocess by ()&
+
+        (cd /opt/config; python -m SimpleHTTPServer 80)&
+
+        (while : ; do
+          pgrep xinit > /dev/null
+          rc=$?
+          if [[ $rc != 0 ]]; then
+            echo "`date -u +"%Y-%m-%d %H:%M:%S"` rc.local - xinit not found, starting"
+            xinit /opt/start_kiosk.sh
+          fi
+          sleep 5;
+        done)&
+
+        exit 0
+      mode: 0755
+
+  - name: Logrotate for kiosk logs
+    copy:
+      dest: /etc/logrotate.d/kiosk-logs
+      content: |
+        /var/log/kiosk_rc.log
+        /var/log/kiosk_all.log
+        {
+          rotate 6
+          daily
+          compress
+          missingok
+          notifempty
+        }
+      mode: 0755

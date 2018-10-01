@@ -1,0 +1,40 @@
+---
+- hosts: armbian
+  gather_facts: false
+  vars:
+
+  tasks:
+  - name: Copy splash image
+    copy:
+      src: {{ override_config_dir | default('config') }}/splash.png
+      dest: /opt/splash.png
+    ignore_errors: true
+    register: splash_image_present
+
+
+  - name: Prepare splashscreen systemd .service file
+    copy:
+      dest: /etc/systemd/system/splashscreen.service
+      content: |
+        [Unit]
+        Description=Splash screen on boot
+        DefaultDependencies=no
+        After=local-fs.target
+
+        [Service]
+        ExecStart=/usr/bin/fbi -T 1 --noverbose -a /opt/splash.png
+        RemainAfterExit=yes
+
+        [Install]
+        WantedBy=sysinit.target
+      mode: 0644
+    register: splashscreen_install
+    when: splash_image_present is succeeded
+
+  - name: adding initd script to single user mode
+    systemd:
+      daemon_reload: yes
+      name: splashscreen
+      #state: restarted
+      enabled: yes
+    when: splashscreen_install is changed

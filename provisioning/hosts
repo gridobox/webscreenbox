@@ -1,0 +1,42 @@
+[all:vars]
+# bash color
+prompt_color="Light red"
+
+
+# URL
+simple_url="http://github.com"
+
+
+hostname="webscreenbox001"
+
+admin_user=admin
+
+# browser="firefox"
+browser="chromium-browser"
+# for Chromium cleanup
+browser_cache_path=".cache/chromium"
+browser_profile_path=".config/chromium"
+
+
+x11vnc_passwd=n0c2018
+
+# operator specific
+operator_user=operator
+# generate following line with `mkpasswd --method=sha-512`
+operator_passwd=xxx
+
+webscreen_name="Web Screen Box"
+webscreen_ascii_logo="WebScreenBox"
+webscreen_ascii_logo_style="metal"
+
+
+[localhost]
+127.0.0.1
+
+#### SET YOUR HOST HERE ####
+[armbian:children]
+192.168.1.16
+
+[armbian:vars]
+ansible_user="{{ admin_user }}"
+ansible_become=true

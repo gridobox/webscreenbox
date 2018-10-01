@@ -1,0 +1,22 @@
+{
+	"settingsReloadIntervalMinutes": 30,
+	"fullscreen": true,
+	"autoStart": true,
+	"websites" : [
+		{
+			"url" : "http://time.is",
+			"duration" : 10,
+			"tabReloadIntervalSeconds": 600
+    },
+		{
+      "url" : "http://play.grafana.org",
+      "duration" : 15,
+      "tabReloadIntervalSeconds": 600
+    },
+		{
+			"url" : "https://flightradar24.com",
+			"duration" : 60,
+			"tabReloadIntervalSeconds": 600
+		}
+	]
+}

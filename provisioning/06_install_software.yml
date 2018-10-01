@@ -1,0 +1,28 @@
+---
+- hosts: armbian
+  gather_facts: false
+  vars:
+  tasks:
+  - name: Install software
+    apt: name={{ item }} state=present
+    with_items:
+    # mandatory for bionic minimal images
+    - xserver-xorg-video-fbdev
+    # TODO investigate fbturbo
+    #- xserver-xorg-video-fbturbo
+    - matchbox
+    - firefox
+    - chromium-browser
+    - overlayroot
+
+    - matchbox-window-manager
+    - x11-xserver-utils
+    - unclutter
+    - xinit
+    - xdotool
+    # for splashscreen
+    - fbi
+    - hicolor-icon-theme
+    - xserver-xorg-input-all
+    - links2
+    - x11vnc

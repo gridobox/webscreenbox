@@ -1,0 +1,36 @@
+# ---
+# - hosts: armbian
+#   gather_facts: false
+#   tasks:
+#   - name: Hide startup messages
+#     lineinfile:
+#       path: /boot/armbianEnv.txt
+#       regexp: '^varbosity='
+#       line: 'verbosity=0'
+#       backrefs: yes
+#     register: verbosity
+#
+# # TODO debug - boot log, logo
+# # https://docs.armbian.com/User-Guide_Fine-Tuning/
+#
+# # cat /boot/armbianEnv.txt
+# # verbosity=1
+# # logo=disabled
+# # console=serial
+# # disp_mode=1920x1080p60
+# # overlay_prefix=sun7i-a20
+# # rootdev=UUID=79706f66-14de-4f16-82b7-c7a323a9c95a
+# # rootfstype=ext4
+# # usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
+# #
+# # mcedit /boot/boot.cmd
+# # setenv bootargs "coherent_pool=1M quiet splash cma=96M"
+#
+#   - name: regenerate boot.scr
+#     shell: mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
+# #    when: extraargs.changed or verbosity.changed
+#     when: verbosity.changed
+#     register: output
+#
+#   - debug: var=output.stdout_lines
+#     when: output.changed
