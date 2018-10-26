@@ -68,7 +68,8 @@ ansible-playbook -i hosts 03_admin_setup.yml
 ansible-playbook -i hosts 05_system_setup.yml
 ansible-playbook -i hosts 06_install_software.yml
 ...
-ansible-playbook -i hosts 99_reboot.yml
+
+ansible-playbook -i hosts 80_clean_up.yml
 
 
 po nainstalovani je treba
