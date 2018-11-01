@@ -97,38 +97,38 @@ Create Matrix image
 dd if=/dev/mmcblk0 of=/root/lime-dashboard-6xx.img bs=8M
 
 6. zmensit partition na 2GB http://raspberrypi.stackexchange.com/questions/5440/copy-existing-raspbian-installation-to-smaller-sd-card
- # nejdriv je treba pripojit blokove zarizeni ze souboru pomoci loop
- modprobe loop
+# nejdriv je treba pripojit blokove zarizeni ze souboru pomoci loop
+modprobe loop
 losetup /dev/loop0 lime2-dashboard-6xx.img
 partprobe /dev/loop0
 
- # stav pratition
+# stav pratition
 fsck.ext4 -fy /dev/loop0p1
 
- # A] zmenseni partition v terminalu http://geekofpassage.blogspot.co.uk/2014/01/im-running-out-of-space-gee-thats-never.html
- resize2fs /dev/loop0p1 <pocet_bloku>
- # kdyz hodi hlasku: resize2fs: Nová velikost je menší než minimum (665451)
- # je treba podle toho upravit velikost, ale nejlepsi pridat aspon par set MB
- resize2fs /dev/loop0p1 665451
+# A] zmenseni partition v terminalu http://geekofpassage.blogspot.co.uk/2014/01/im-running-out-of-space-gee-thats-never.html
+resize2fs /dev/loop0p1 <pocet_bloku>
+# kdyz hodi hlasku: resize2fs: Nová velikost je menší než minimum (665451)
+# je treba podle toho upravit velikost, ale nejlepsi pridat aspon par set MB
+resize2fs /dev/loop0p1 665451
 
- # B] zmenseni partition v GUI
+# B] zmenseni partition v GUI
 gparted /dev/loop0
- # cca 2048MiB
+# cca 2048MiB
 
- # overit vylsedek v fdisku
+# overit vylsedek v fdisku
 fdisk /dev/loop0
- Zařízení     Zaveditelný Start   Konec Sektory  Size Id Druh
- /dev/loop0p1              8192 5332991 5324800  2,6G 83 Linux
+Zařízení     Zaveditelný Start   Konec Sektory  Size Id Druh
+/dev/loop0p1              8192 5332991 5324800  2,6G 83 Linux
 
- # odpojeni blokoveho zarizeni
+# odpojeni blokoveho zarizeni
 losetup -d /dev/loop0
 
- # oriznuti souboru .img
- # vysledna velikost v bytech se zjisti z fdisk (vyse) jako koncovy sektor (+1?) * 512 (viz. units)
- v tomto prikladu je to
+# oriznuti souboru .img
+# vysledna velikost v bytech se zjisti z fdisk (vyse) jako koncovy sektor (+1?) * 512 (viz. units)
+v tomto prikladu je to
 echo "(5332991+1) * 512" | bc
 
- truncate --size=2730491904 lime-dashboard-6xx.img
+truncate --size=2730491904 lime-dashboard-6xx.img
 
 # k otestovani image lokalne
 losetup /dev/loop0 lime2-dashboard-6xx.img
